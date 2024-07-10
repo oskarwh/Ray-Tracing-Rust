@@ -19,7 +19,7 @@ impl Sphere
     {
         let mut travel_vec = None;
         match destination {
-            Some(dest) => {travel_vec = Some(cen-dest);}
+            Some(dest) => {travel_vec = Some(dest - cen);}
             None => {}
         }
 
@@ -38,7 +38,7 @@ impl Sphere
     {
         let mut center = self.center;
         match self.travel_vec {
-            Some(travel_vec) => {center = travel_vec.const_mul(time);}
+            Some(travel_vec) => {center = center + travel_vec.const_mul(time);}
             None => {}
         }
 
