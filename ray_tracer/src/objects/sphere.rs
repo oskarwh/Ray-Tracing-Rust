@@ -23,8 +23,10 @@ impl Sphere
     }
 }
 
-// Sphere implements hittable trait, to check if rays it it
-impl Hittable for Sphere 
+/*
+ * Sphere implements hittable trait, to check if rays it it
+ */
+ impl Hittable for Sphere 
 {
     fn hit(&self, r: &Ray, t_min: f32, t_max: f32, hit_rec: &mut HitRecord) -> bool
     {

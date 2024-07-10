@@ -15,7 +15,9 @@ pub struct Camera
     u: Vec3,
     v: Vec3, 
     w: Vec3,
-    lens_radius: f32
+    lens_radius: f32,
+
+    frames_second: i32,
 }
 
 impl Default for Camera
@@ -46,7 +48,8 @@ impl Default for Camera
             u: Vec3::default(),
             v: Vec3::default(),
             w: Vec3::default(),
-            lens_radius: 0.0
+            lens_radius: 0.0,
+            frames_second: 1, // One frame per second
         }
     }
 }
@@ -62,7 +65,8 @@ impl Camera {
                vfov: f32, // vertical field-of-view in degrees
                aspect_ratio: f32,
                aperture: f32,
-               focus_dist: f32
+               focus_dist: f32,
+               frames_second: i32
             ) -> Camera
     {
         // Calculate vfov
@@ -97,7 +101,8 @@ impl Camera {
             u: u,
             v: v,
             w: w,
-            lens_radius: lens_radius
+            lens_radius: lens_radius,
+            frames_second: frames_second
         }
     }
 
@@ -108,7 +113,15 @@ impl Camera {
     {
         let rd: Vec3 = random_in_unit_disk().const_mul(self.lens_radius);
         let offset = self.u.const_mul(rd.x()) + self.v.const_mul(rd.y());
-        Ray::new(self.origin + offset, 
-            self.lower_left_corner + self.horizontal.const_mul(s) + self.vertical.const_mul(t) - self.origin - offset)
+
+        // Ray will be initiated at a random time in the current frame
+        let max_time = 1 / self.frames_second;
+        let ray_time = random_number_custom(0, max_time);
+
+        Ray::new(
+            self.origin + offset, 
+            self.lower_left_corner + self.horizontal.const_mul(s) + self.vertical.const_mul(t) - self.origin - offset,
+            ray_time
+        )
     }
 }
