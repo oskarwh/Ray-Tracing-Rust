@@ -5,7 +5,7 @@ pub struct Ray
 {
     origin: Point3,
     direction: Vec3,
-    durration: f64,
+    time: f32,
 }
 
 impl Default for Ray
@@ -14,7 +14,7 @@ impl Default for Ray
         Ray {
             origin: Point3::default(),
             direction: Vec3::default(),
-            time: 0
+            time: 0.0
         }
     }
 }
@@ -24,11 +24,11 @@ impl Ray
     /**
      * Returns a new ray with given start point and direction
      */
-    pub fn new(origin: Point3, direction:Vec3, time:f64) -> Ray
+    pub fn new(origin: Point3, direction:Vec3, time:f32) -> Ray
     {
         Ray {
             origin: origin,
-            direction: direction
+            direction: direction,
             time: time
         }
     }
@@ -60,7 +60,7 @@ impl Ray
     /*
      * Return start time for ray(based of camera)
      */
-    pub fn time(&self) -> f64
+    pub fn time(&self) -> f32
     {
         self.time
     }

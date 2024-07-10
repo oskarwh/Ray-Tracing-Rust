@@ -1,4 +1,5 @@
 use crate::{vectors::{vec3::{Point3, Vec3, cross, random_in_unit_disk}, ray::Ray}, utility::rtweekend::degrees_to_radians};
+use crate::random_number_custom;
 
 pub struct Camera
 {
@@ -115,8 +116,8 @@ impl Camera {
         let offset = self.u.const_mul(rd.x()) + self.v.const_mul(rd.y());
 
         // Ray will be initiated at a random time in the current frame
-        let max_time = 1 / self.frames_second;
-        let ray_time = random_number_custom(0, max_time);
+        let max_time = 1.0 / self.frames_second as f32;
+        let ray_time = random_number_custom(0.0, max_time);
 
         Ray::new(
             self.origin + offset, 
