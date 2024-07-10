@@ -45,7 +45,7 @@ impl Material for Lambertian
             scatter_driection = rec.normal;
         }
 
-        *scattered = Ray::new(rec.p, scatter_driection);
+        *scattered = Ray::new(rec.p, scatter_driection, r_in.time());
         *attenuation = self.albedo;
         return true
     }

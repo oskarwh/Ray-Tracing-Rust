@@ -59,7 +59,7 @@ impl Material for Dielectric
             direction = refract(&unit_direction, &rec.normal, refraction_ratio);
         }
 
-        *scattered = Ray::new(rec.p, direction);
+        *scattered = Ray::new(rec.p, direction, r_in.time());
         return true
     }
 }
