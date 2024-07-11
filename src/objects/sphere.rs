@@ -1,33 +1,43 @@
 use std::rc::Rc;
 use std::option::Option;
 
-use crate::{utility::aabb::AABB, vectors::{ray::Ray, vec3::{dot, Point3, Vec3}}};
+use crate::{utility::{aabb::AABB, interval::Interval}, vectors::{ray::Ray, vec3::{dot, Point3, Vec3}}};
 
-use super::{hit_record::HitRecord, hittable::Hittable, hittable::HittableObject, material::material::Material,};
+use super::{hit_record::HitRecord, hittable::{Hittable, HittableObject, HittableObjectData, Object}, material::material::Material,};
 
 pub struct Sphere
 {
     center: Point3,
     radius: f32,
-    hittable_object: HittableObject
+    hittable_object: HittableObjectData
 }
 
 impl Sphere
 {
     pub fn new(cen: Point3, r: f32, material: Rc<dyn Material>, destination: Option<Point3>) -> Sphere
     {
+        // Set up boundary box for object
+        let radius_vector = Vec3::new(r,r,r);
+        let bbox: Rc<AABB>;
+
         let mut travel_vec = None;
         match destination {
-            Some(dest) => {travel_vec = Some(dest - cen);}
-            None => {}
+            Some(dest) => {
+                travel_vec = Some(dest - cen);
+                
+                // Create aabb box from sphere at t=0 and t=1
+                let b1 = AABB::new(cen - radius_vector, cen + radius_vector);
+                let b2 = AABB::new(dest - radius_vector, dest + radius_vector);
+                bbox = Rc::new(AABB::from_aabb(&b1, &b2));
+            }
+            None => {
+                // Create aabb box from center as sphere is static
+                bbox = Rc::new(AABB::new(cen-radius_vector, cen+radius_vector));
+            }
         }
 
-        // Set up boundary box for object
-        let rvec = Vec3::new(r,r,r);
-        let bbox = Rc::new(AABB::new(cen-rvec, cen+rvec));
-
         // Create hittable object struct for sphere
-        let object = HittableObject {
+        let object = HittableObjectData {
             material: material,
             travel_vec: travel_vec,
             bbox: bbox
@@ -60,7 +70,7 @@ impl Sphere
  */
 impl Hittable for Sphere 
 {
-    fn hit(&self, r: &Ray, t_min: f32, t_max: f32, hit_rec: &mut HitRecord) -> bool
+    fn hit(&self, r: &Ray, ray_t: Interval, hit_rec: &mut HitRecord) -> bool
     {
         // Find center at current time 
         let center = self.center_position(r.time());
@@ -81,10 +91,10 @@ impl Hittable for Sphere
 
         // Find the nearest root that lies in the acceptable range.
         let mut root = (-half_b - sqrtd) / a;
-        if root < t_min || t_max < root
+        if ray_t.surrounds(root)
         {
             root = (-half_b + sqrtd) / a;
-            if root < t_min || t_max < root
+            if ray_t.surrounds(root)
             {
                 return false
             }
@@ -103,26 +113,26 @@ impl Hittable for Sphere
 
         return true
     }
-    
+}
+
+/*
+* Implement Object to to use default access for data
+*/
+impl Object for Sphere {
     fn get_material(&self) -> Rc<dyn Material> {
         return self.hittable_object.material.clone()
     }
     
     fn get_bounding_box(&self) -> Rc<AABB> {
-        let mut aabb = self.hittable_object.bbox.clone();
-        match self.get_travel_vec() {
-            Some(vec) => {
-                todo!()
-            }
-            None => {}
-        }
-
-        return aabb
+        return self.hittable_object.bbox.clone();
     }
     
     fn get_travel_vec(&self) -> Option<Vec3> {
         return self.hittable_object.travel_vec
     }
-
-    
 }
+
+/*
+* Needs to implement empty trait to ensure that both Object and Hittable is implemented
+*/
+impl HittableObject for Sphere {}

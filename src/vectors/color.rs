@@ -1,4 +1,4 @@
-use crate::{Color, objects::{hit_record::HitRecord, hittable_list::HittableList}};
+use crate::{objects::{hit_record::HitRecord, hittable::Hittable, hittable_list::HittableList}, utility::interval::Interval, Color};
 
 use std::{io::{Write, StdoutLock}, f32::INFINITY};
 
@@ -48,7 +48,8 @@ pub fn ray_color(r: &Ray, world: &HittableList, depth: i32) -> Color
     }
 
     // Check if ray hit anything
-    if world.hit(r, SPHERE_INTERSECT, INFINITY, &mut rec)
+    let ray_t = Interval::new(SPHERE_INTERSECT, INFINITY);
+    if world.hit(r, ray_t, &mut rec)
     {
         let mut scattered = Ray::default();
         let mut attenuation = Color::default();

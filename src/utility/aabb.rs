@@ -3,6 +3,7 @@ use crate::utility::interval::Interval;
 
 const N_AXIS: i32 = 3;
 
+#[derive(Clone, Copy)]
 pub struct AABB
 {
     x: Interval,
@@ -42,7 +43,15 @@ impl AABB
         }
     }
 
-    pub fn hit(&self, ray: Ray, mut interval: Interval) -> bool
+    pub fn from_aabb(b1: &AABB, b2: &AABB) -> AABB {
+        AABB {
+            x: Interval::from_intervals(b1.x, b2.x),
+            y: Interval::from_intervals(b1.y, b2.y),
+            z: Interval::from_intervals(b1.z, b2.z),
+        }
+    }
+
+    pub fn hit(&self, ray: &Ray, mut ray_interval: Interval) -> bool
     {
         let origin =  ray.origin().as_array();
         let direction = ray.direction().as_array();
@@ -58,14 +67,14 @@ impl AABB
             let t1 = (axis_interval.max - origin[axis]) * adinv;
             
             if t0 < t1 {
-                if t0 > interval.min {interval.min = t0;}
-                if t1 < interval.max {interval.max = t1;}
+                if t0 > ray_interval.min {ray_interval.min = t0;}
+                if t1 < ray_interval.max {ray_interval.max = t1;}
             }else {
-                if t1 > interval.min {interval.min = t1;}
-                if t0 < interval.max {interval.max = t0;}
+                if t1 > ray_interval.min {ray_interval.min = t1;}
+                if t0 < ray_interval.max {ray_interval.max = t0;}
             }
             
-            if interval.max <= interval.min {return false}
+            if ray_interval.max <= ray_interval.min {return false}
         }
    
         return true
