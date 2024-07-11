@@ -1,6 +1,6 @@
 {
     "rust-analyzer.linkedProjects": [
-        ".\\ray_tracer\\Cargo.toml"
+        "Cargo.toml"
     ],
     "rust-analyzer.showUnlinkedFileNotification": false
 }
