@@ -1,18 +1,15 @@
 use std::rc::Rc;
 use std::option::Option;
 
-use crate::vectors::{vec3::{Point3, Vec3, dot}, ray::Ray};
-//use crate::utility::{aabb::{AABB}};
+use crate::{utility::aabb::AABB, vectors::{ray::Ray, vec3::{dot, Point3, Vec3}}};
 
-use super::{hittable::Hittable, hit_record::HitRecord, material::{material::Material}};
+use super::{hit_record::HitRecord, hittable::Hittable, hittable::HittableObject, material::material::Material,};
 
 pub struct Sphere
 {
     center: Point3,
     radius: f32,
-    material: Rc<dyn Material>,
-    travel_vec: Option<Vec3>,
-    //bbox: AABB,
+    hittable_object: HittableObject
 }
 
 impl Sphere
@@ -25,11 +22,21 @@ impl Sphere
             None => {}
         }
 
+        // Set up boundary box for object
+        let rvec = Vec3::new(r,r,r);
+        let bbox = Rc::new(AABB::new(cen-rvec, cen+rvec));
+
+        // Create hittable object struct for sphere
+        let object = HittableObject {
+            material: material,
+            travel_vec: travel_vec,
+            bbox: bbox
+        };
+
         Sphere {
             radius: r,
             center: cen,
-            material: material,
-            travel_vec: travel_vec
+            hittable_object: object
         }
     }
 
@@ -39,7 +46,7 @@ impl Sphere
     pub fn center_position(&self, time: f32) -> Point3
     {
         let mut center = self.center;
-        match self.travel_vec {
+        match self.get_travel_vec() {
             Some(travel_vec) => {center = center + travel_vec.const_mul(time);}
             None => {}
         }
@@ -51,7 +58,7 @@ impl Sphere
 /*
  * Sphere implements hittable trait, to check if rays it it
  */
- impl Hittable for Sphere 
+impl Hittable for Sphere 
 {
     fn hit(&self, r: &Ray, t_min: f32, t_max: f32, hit_rec: &mut HitRecord) -> bool
     {
@@ -92,9 +99,30 @@ impl Sphere
         hit_rec.set_face_normal(r, outward_normal);
         
         // Set which material ray hit
-        let material_clone = Rc::clone(&self.material);
-        hit_rec.set_material(material_clone);
+        hit_rec.set_material(self.get_material());
 
         return true
     }
+    
+    fn get_material(&self) -> Rc<dyn Material> {
+        return self.hittable_object.material.clone()
+    }
+    
+    fn get_bounding_box(&self) -> Rc<AABB> {
+        let mut aabb = self.hittable_object.bbox.clone();
+        match self.get_travel_vec() {
+            Some(vec) => {
+                todo!()
+            }
+            None => {}
+        }
+
+        return aabb
+    }
+    
+    fn get_travel_vec(&self) -> Option<Vec3> {
+        return self.hittable_object.travel_vec
+    }
+
+    
 }
