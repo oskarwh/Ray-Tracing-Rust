@@ -80,16 +80,21 @@ impl AABB
         return true
     }
 
-
-    fn as_array(&self) -> [Interval; 3] 
-    {
+    /**
+     * Returns internal intervals as an array
+     */
+    fn as_array(&self) -> [Interval; 3]  {
         [self.x, self.y, self.z]
     }
 
-    /*
-     * Getters
+    /**
+     * Computes the total volume of the boundary
      */
-    pub fn x(&self) -> Interval {self.x}
-    pub fn y(&self) -> Interval {self.y}
-    pub fn z(&self) -> Interval {self.z}
+    pub fn volume(&self) -> f32 {
+        let x_hat = self.x.max - self.x.min;
+        let y_hat = self.y.max - self.y.min;
+        let z_hat = self.z.max - self.z.min;
+        return x_hat * y_hat * z_hat
+    }
+   
 }

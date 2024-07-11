@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{rc::Rc, sync::Arc};
 use std::option::Option;
 
 use crate::{utility::{aabb::AABB, interval::Interval}, vectors::{ray::Ray, vec3::{dot, Point3, Vec3}}};
@@ -14,11 +14,11 @@ pub struct Sphere
 
 impl Sphere
 {
-    pub fn new(cen: Point3, r: f32, material: Rc<dyn Material>, destination: Option<Point3>) -> Sphere
+    pub fn new(cen: Point3, r: f32, material: Arc<dyn Material>, destination: Option<Point3>) -> Sphere
     {
         // Set up boundary box for object
         let radius_vector = Vec3::new(r,r,r);
-        let bbox: Rc<AABB>;
+        let bbox: Arc<AABB>;
 
         let mut travel_vec = None;
         match destination {
@@ -28,11 +28,11 @@ impl Sphere
                 // Create aabb box from sphere at t=0 and t=1
                 let b1 = AABB::new(cen - radius_vector, cen + radius_vector);
                 let b2 = AABB::new(dest - radius_vector, dest + radius_vector);
-                bbox = Rc::new(AABB::from_aabb(&b1, &b2));
+                bbox = Arc::new(AABB::from_aabb(&b1, &b2));
             }
             None => {
                 // Create aabb box from center as sphere is static
-                bbox = Rc::new(AABB::new(cen-radius_vector, cen+radius_vector));
+                bbox = Arc::new(AABB::new(cen-radius_vector, cen+radius_vector));
             }
         }
 
@@ -113,18 +113,18 @@ impl Hittable for Sphere
 
         return true
     }
+
+    fn get_bounding_box(&self) -> AABB {
+        *(self.hittable_object.bbox)
+    }
 }
 
 /*
 * Implement Object to to use default access for data
 */
 impl Object for Sphere {
-    fn get_material(&self) -> Rc<dyn Material> {
+    fn get_material(&self) -> Arc<dyn Material> {
         return self.hittable_object.material.clone()
-    }
-    
-    fn get_bounding_box(&self) -> Rc<AABB> {
-        return self.hittable_object.bbox.clone();
     }
     
     fn get_travel_vec(&self) -> Option<Vec3> {

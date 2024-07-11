@@ -27,3 +27,11 @@ pub fn random_number_custom(min: f32, max: f32) -> f32
     let mut rng = rand::thread_rng();
     rng.gen_range(min, max)
 }
+
+/**
+ * Returns random integer
+ */
+pub fn random_int(min: i32, max: i32) -> i32 {
+    let mut rng = rand::thread_rng();
+    rng.gen_range(min, max)
+}

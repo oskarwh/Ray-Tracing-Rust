@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{rc::Rc, sync::Arc};
 
 use crate::vectors::{vec3::{Point3, Vec3, dot}, ray::Ray};
 
@@ -12,7 +12,7 @@ pub struct HitRecord
 {
     pub p: Point3, // Point of impact
     pub normal: Vec3, // Normal
-    pub mat_ptr: Rc<dyn Material>,// Material which ray hit
+    pub mat_ptr: Arc<dyn Material>,// Material which ray hit
     pub t: f32, // Root
     pub front_face: bool
 }
@@ -27,7 +27,7 @@ impl Default for HitRecord
         HitRecord { 
             p: Point3::new(0.0,0.0,0.0), 
             normal: Vec3::new(0.0,0.0,0.0), 
-            mat_ptr: Rc::new(Lambertian::default()),
+            mat_ptr: Arc::new(Lambertian::default()),
             t: 0.0, 
             front_face: true 
         }
@@ -55,15 +55,15 @@ impl HitRecord
     /**
      * Returns a new clone of the material object
      */
-    pub fn get_material(&self) -> Rc<dyn Material>
+    pub fn get_material(&self) -> Arc<dyn Material>
     {
-        Rc::clone(&self.mat_ptr)
+        self.mat_ptr.clone()
     }
 
     /**
      * Sets a new material for the object
      */
-    pub fn set_material(&mut self, material: Rc<dyn Material>) 
+    pub fn set_material(&mut self, material: Arc<dyn Material>) 
     {
         self.mat_ptr = material;
     }

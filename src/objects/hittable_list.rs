@@ -16,7 +16,7 @@ use super::hittable::{Hittable, HittableObject};
  */
 pub struct HittableList
 {
-    list: Vec<Rc<dyn HittableObject>>,
+    list: Vec<Arc<dyn Hittable>>,
     bbox: Arc<RwLock<AABB>>
 }
 
@@ -30,7 +30,7 @@ impl HittableList
 
         HittableList
         {
-            list: Vec::<Rc<dyn HittableObject>>::new(),
+            list: Vec::<Arc<dyn Hittable>>::new(),
             bbox: bbox
         }
     }
@@ -40,7 +40,7 @@ impl HittableList
         self.list.clear();
     }
 
-    pub fn add(&mut self, object: Rc<dyn HittableObject>)
+    pub fn add(&mut self, object: Arc<dyn Hittable>)
     {
         self.list.push(object.clone());
         // Add new objects boundary to list boundary
@@ -48,6 +48,10 @@ impl HittableList
         let mut bbox_write= self.bbox.write().unwrap();
 
         *bbox_write = AABB::from_aabb(&bbox_read, &(object.get_bounding_box()));
+    }
+
+    pub fn get_list(&mut self) -> &mut Vec<Arc<dyn Hittable>> {
+        &mut (self.list)
     }
 }
 
@@ -73,5 +77,9 @@ impl Hittable for HittableList {
         }
 
         return hit_anything;
+    }
+    
+    fn get_bounding_box(&self) -> AABB {
+        *(self.bbox.read().unwrap())
     }
 }

@@ -3,6 +3,7 @@ mod objects;
 mod camera;
 mod utility;
 
+use objects::bvh_node::BvhNode;
 use utility::rtweekend::random_number_custom;
 use vectors::vec3::{Point3, random_vec, random_vec_custom};
 
@@ -15,9 +16,9 @@ use crate::objects::sphere::Sphere;
 use crate::utility::rtweekend::random_number;
 use crate::vectors::vec3::{Color, Vec3};
 use crate::vectors::color::*;
-use std::rc::Rc;
 use std::io::{self, Write};
 
+use std::sync::Arc;
 use std::time::SystemTime;
 
 // Image constants
@@ -86,10 +87,10 @@ fn main() -> std::io::Result<()>
  */
 fn random_scene() -> HittableList
 {
-    let mut world: HittableList = HittableList::new();
+    let mut small_spheres: HittableList = HittableList::new();
 
-    let ground_material = Rc::new(Lambertian::new(Color::new(0.5,0.5,0.5)));
-    world.add(Rc::new(Sphere::new(Point3::new(0.0, -1000.0, 0.0), 1000.0, ground_material, None)));
+    let ground_material = Arc::new(Lambertian::new(Color::new(0.5,0.5,0.5)));
+    small_spheres.add(Arc::new(Sphere::new(Point3::new(0.0, -1000.0, 0.0), 1000.0, ground_material, None)));
 
     for a in -11..11
     {
@@ -105,36 +106,39 @@ fn random_scene() -> HittableList
                 {
                     // diffuse
                     let albedo = random_vec() * random_vec();
-                    let sphere_material  = Rc::new(Lambertian::new(albedo));
+                    let sphere_material  = Arc::new(Lambertian::new(albedo));
 
                     let center2 = center + Vec3::new(0.0, random_number_custom(0.0, 0.5), 0.0);
-                    world.add(Rc::new(Sphere::new(center, 0.2, sphere_material, Some(center2))));
+                    small_spheres.add(Arc::new(Sphere::new(center, 0.2, sphere_material, Some(center2))));
                 } else if  choose_mat < 0.95
                 {
                     // metal
                     let albedo = random_vec_custom(0.5, 1.0);
                     let fuzz = random_number_custom(0.0, 0.5);
-                    let sphere_material  = Rc::new(Metal::new(albedo, fuzz));
-                    world.add(Rc::new(Sphere::new(center, 0.2, sphere_material, None)));
+                    let sphere_material  = Arc::new(Metal::new(albedo, fuzz));
+                    small_spheres.add(Arc::new(Sphere::new(center, 0.2, sphere_material, None)));
                 } else 
                 {
                     // glass
-                    let sphere_material  = Rc::new(Dielectric::new(1.5));
-                    world.add(Rc::new(Sphere::new(center, 0.2, sphere_material, None)));
+                    let sphere_material  = Arc::new(Dielectric::new(1.5));
+                    small_spheres.add(Arc::new(Sphere::new(center, 0.2, sphere_material, None)));
                 }
             }
         }
     }
 
-    let material1 = Rc::new(Dielectric::new(1.5));
-    world.add(Rc::new(Sphere::new(Point3::new(0.0, 1.0, 0.0), 1.0, material1, None)));
+    let mut world = HittableList::new();
+    world.add(BvhNode::add(&mut small_spheres));
 
-    let material2 = Rc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
+    let material1 = Arc::new(Dielectric::new(1.5));
+    world.add(Arc::new(Sphere::new(Point3::new(0.0, 1.0, 0.0), 1.0, material1, None)));
+
+    let material2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
     let center2 = Point3::new(-4.0, 1.0, 0.0) + Vec3::new(0.0, random_number_custom(0.0,0.5), 0.0);
-    world.add(Rc::new(Sphere::new(Point3::new(-4.0, 1.0, 0.0), 1.0, material2, Some(center2))));
+    world.add(Arc::new(Sphere::new(Point3::new(-4.0, 1.0, 0.0), 1.0, material2, Some(center2))));
 
-    let material3 = Rc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
-    world.add(Rc::new(Sphere::new(Point3::new(4.0, 1.0, 0.0), 1.0, material3, None)));
+    let material3 = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
+    world.add(Arc::new(Sphere::new(Point3::new(4.0, 1.0, 0.0), 1.0, material3, None)));
 
     return world;
 }
