@@ -1,12 +1,13 @@
+#[derive(Copy, Clone)]
 pub struct Interval 
 {
-    min: f32,
-    max: f32
+    pub min: f32,
+    pub max: f32
 }
 
-pub impl Interval
+impl Interval
 {
-    pub fn new(min: f32, max: f32)
+    pub fn new(min: f32, max: f32) -> Interval
     {
         Interval
         {
@@ -20,8 +21,8 @@ pub impl Interval
      */
     pub fn clamp(&self, value: f32) -> f32
     {
-        if (value < self.min) return self.min
-        if (value > self.max) return self.max
+        if value < self.min {return self.min}
+        if value > self.max {return self.max}
 
         return value
     }
@@ -31,7 +32,7 @@ pub impl Interval
      */
     pub fn expand(&self, delta: f32) -> Interval
     {   
-        let padding = delta/2;
-        return Interval{min-padding, max+padding}
+        let padding = delta/2.0;
+        return Interval::new(self.min - padding, self.max + padding)
     }
 }

@@ -88,7 +88,7 @@ impl Camera {
         let lens_radius = aperture / 2.0;
 
         // Set to 1.0 as it not used here.
-        let focal_legnth = 1.0;
+        //let focal_legnth = 1.0;
 
         Camera{
             aspect_ratio: aspect_ratio,

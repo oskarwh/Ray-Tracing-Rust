@@ -1,31 +1,12 @@
-use super::{hittable::Hittable, material::material::Material};
+//use super::{hittable::Hittable, material::material::Material};
+
+use crate::{utility::aabb::AABB};
+use crate::vectors::{vec3::{Vec3}};
+
 
 pub struct Object
 {
-    hittable: Box<dyn Hittable>,
-    material: Box<dyn Material>
-}
-
-
-impl Object
-{
-    /**
-     * Creates a new object
-     */
-    pub fn new(hittable: Box<dyn Hittable>, material: Box<dyn Material>) -> Object
-    {
-        Object{
-            hittable: hittable,
-            material: material
-        }
-    }
-
-    /** 
-     * Returns a refernce to the hittable object
-    */
-    pub fn hittable(&self) -> &dyn Hittable
-    {
-        // Return a refernce of hittable Box content
-        &*self.hittable
-    }
+    //material: Rc<dyn Material>,
+    travel_vec: Option<Vec3>,
+    bbox: AABB,
 }

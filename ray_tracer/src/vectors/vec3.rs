@@ -118,6 +118,14 @@ impl Vec3
         const S: f32 = 1e-8;
         self.e[0].abs() < S && self.e[1].abs() < S && self.e[2].abs() < S
     }
+
+    /*
+     * Return vec3 as an array
+     */
+    pub fn as_array(&self) -> [f32; 3] 
+    {
+        return self.e
+    }
 }
 
 
@@ -248,9 +256,9 @@ pub fn random_in_unit_disk() -> Vec3
 }
 
 /**
- * Returns a vector based on hemispherte algorithm
+ * Returns a vector based on hemisphere algorithm
  */
-pub fn random_in_hemispehert(normal: &Vec3) -> Vec3
+pub fn random_in_hemisphere(normal: &Vec3) -> Vec3
 {
     let in_unit_sphere = random_in_unit_sphere();
     if dot(&in_unit_sphere, normal) > 0.0 // In the same hemipshere as the normal

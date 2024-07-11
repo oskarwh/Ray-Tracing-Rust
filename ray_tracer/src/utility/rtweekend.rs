@@ -1,4 +1,4 @@
-use rand::{thread_rng, Rng};
+use rand::{Rng};
 
 // Constanst
 pub const INFINITY: f32 = 1.0_f32 / 0.0_f32;

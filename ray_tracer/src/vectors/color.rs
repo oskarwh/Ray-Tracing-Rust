@@ -1,8 +1,8 @@
-use crate::{Color, objects::{hittable::Hittable, hit_record::HitRecord, hittable_list::HittableList}};
+use crate::{Color, objects::{hit_record::HitRecord, hittable_list::HittableList}};
 
 use std::{io::{Write, StdoutLock}, f32::INFINITY};
 
-use super::{ray::Ray, vec3::{Point3, dot, Vec3, random_unit_vector}};
+use super::{ray::Ray};
 
 // Constants
 const SPHERE_INTERSECT: f32 = 0.001;

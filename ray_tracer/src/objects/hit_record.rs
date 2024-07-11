@@ -55,7 +55,7 @@ impl HitRecord
     /**
      * Returns a new clone of the material object
      */
-    pub fn getMaterial(&self) -> Rc<dyn Material>
+    pub fn get_material(&self) -> Rc<dyn Material>
     {
         Rc::clone(&self.mat_ptr)
     }
@@ -63,7 +63,7 @@ impl HitRecord
     /**
      * Sets a new material for the object
      */
-    pub fn setMaterial(&mut self, material: Rc<dyn Material>) 
+    pub fn set_material(&mut self, material: Rc<dyn Material>) 
     {
         self.mat_ptr = material;
     }

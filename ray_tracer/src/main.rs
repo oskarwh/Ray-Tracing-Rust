@@ -3,8 +3,6 @@ mod objects;
 mod camera;
 mod utility;
 
-use objects::material;
-use objects::material::material::Material;
 use utility::rtweekend::random_number_custom;
 use vectors::vec3::{Point3, random_vec, random_vec_custom};
 
@@ -19,6 +17,8 @@ use crate::vectors::vec3::{Color, Vec3};
 use crate::vectors::color::*;
 use std::rc::Rc;
 use std::{io::{self, Write}};
+
+use std::time::{SystemTime};
 
 // Image constants
 const ASPECT_RATIO: f32 = 3.0/2.0;
@@ -48,6 +48,8 @@ fn main()
     let output = format!("P3\n{} {}\n255\n", IMAGE_WIDTH, IMAGE_HEIGHT);
     handle.write_all(output.as_bytes());
 
+    eprintln!("\nStarting.\n");
+    let now = SystemTime::now();
     for j in (0..IMAGE_HEIGHT).rev()
     {
         //eprintln!("{esc}c", esc = 27 as char);
@@ -64,6 +66,14 @@ fn main()
                 pixel_color = pixel_color + ray_color(&ray, &world, MAX_DEPTH);
             }
             write_color(&mut handle, &pixel_color, SAMPLES_PER_PIXEL);
+        }
+    }
+    match now.elapsed() {
+        Ok(elapsed) => {
+            eprintln!("Render took: {} ms", elapsed.as_millis());
+        }
+        Err(e) => {
+            eprintln!("Error: {e:?}");
         }
     }
     eprintln!("\nDone.\n");
@@ -89,7 +99,6 @@ fn random_scene() -> HittableList
 
             if (center - Point3::new(4.0, 0.2, 0.0)).length() > 0.9
             {
-                let material_ground: Rc<dyn Material>;
 
                 if choose_mat < 0.8 
                 {

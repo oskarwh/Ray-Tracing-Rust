@@ -2,15 +2,17 @@ use std::rc::Rc;
 use std::option::Option;
 
 use crate::vectors::{vec3::{Point3, Vec3, dot}, ray::Ray};
+//use crate::utility::{aabb::{AABB}};
 
-use super::{hittable::Hittable, hit_record::HitRecord, material::{material::Material, self}};
+use super::{hittable::Hittable, hit_record::HitRecord, material::{material::Material}};
 
 pub struct Sphere
 {
     center: Point3,
     radius: f32,
     material: Rc<dyn Material>,
-    travel_vec: Option<Vec3>
+    travel_vec: Option<Vec3>,
+    //bbox: AABB,
 }
 
 impl Sphere
@@ -91,7 +93,7 @@ impl Sphere
         
         // Set which material ray hit
         let material_clone = Rc::clone(&self.material);
-        hit_rec.setMaterial(material_clone);
+        hit_rec.set_material(material_clone);
 
         return true
     }

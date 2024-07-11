@@ -1,10 +1,9 @@
-use crate::rtweekend{};
+use crate::vectors::{vec3::Point3, ray::Ray};
+use crate::utility::interval::Interval;
 
-use super::{vec3::Point3, ray::Ray}
+const N_AXIS: i32 = 3;
 
-const N_AXIS = 3;
-
-struct AABB
+pub struct AABB
 {
     x: Interval,
     y: Interval,
@@ -37,35 +36,44 @@ impl AABB
             };
 
         AABB {
-            x,
-            y,
-            z
+            x: x,
+            y: y,
+            z: z
         }
     }
 
-    pub fn hit(&self, ray: Ray) -> bool
+    pub fn hit(&self, ray: Ray, mut interval: Interval) -> bool
     {
-        let origin =  ray.origin;
-        let direction = ray.dir;
+        let origin =  ray.origin().as_array();
+        let direction = ray.direction().as_array();
         let axes = self.as_array();
 
         for axis in 0..N_AXIS {
-            let interval = axes[axis];
-            let adinv = 1.0 / direction[axis]
+            let axis: usize = axis as usize;
+            let axis_interval = axes[axis];
+            let adinv = 1.0 / direction[axis];
 
             // Calcualte ray intersection of min and max values in interval
-            let t0 = (interval.min - origin[axis]) * adinv; 
-            let t1 = (interval.max - origin[axis]) * adinv;
+            let t0 = (axis_interval.min - origin[axis]) * adinv; 
+            let t1 = (axis_interval.max - origin[axis]) * adinv;
             
             if t0 < t1 {
-                
+                if t0 > interval.min {interval.min = t0;}
+                if t1 < interval.max {interval.max = t1;}
+            }else {
+                if t1 > interval.min {interval.min = t1;}
+                if t0 < interval.max {interval.max = t0;}
             }
             
+            if interval.max <= interval.min {return false}
         }
+   
+        return true
     }
 
 
-    fn as_array(&self) -> [Interval; 3] {
+    fn as_array(&self) -> [Interval; 3] 
+    {
         [self.x, self.y, self.z]
     }
 

@@ -1,4 +1,4 @@
-use crate::{vectors::{vec3::{Color, Vec3, random_unit_vector, reflect, dot, random_in_unit_sphere}, ray::Ray}, objects::hit_record::HitRecord};
+use crate::{vectors::{vec3::{Color, Vec3, reflect, dot, random_in_unit_sphere}, ray::Ray}, objects::hit_record::HitRecord};
 
 use super::material::Material;
 
