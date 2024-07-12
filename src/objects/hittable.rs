@@ -46,7 +46,7 @@ pub fn compare_aabb(object1: &'_ Arc<dyn Hittable>, object2: &'_ Arc<dyn Hittabl
     let b1_volume = object1.get_bounding_box().volume();
     let b2_volume = object2.get_bounding_box().volume();
     
-    let mut order: Ordering;
+    let order: Ordering;
     if b1_volume == b2_volume {
         order = Ordering::Equal;
     }else if b1_volume < b2_volume {

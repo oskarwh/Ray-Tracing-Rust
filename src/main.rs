@@ -127,18 +127,18 @@ fn random_scene() -> HittableList
         }
     }
 
-    let mut world = HittableList::new();
-    world.add(BvhNode::add(&mut small_spheres));
+    //let mut world = HittableList::new();
+    //world.add(BvhNode::add(&mut small_spheres));
 
     let material1 = Arc::new(Dielectric::new(1.5));
-    world.add(Arc::new(Sphere::new(Point3::new(0.0, 1.0, 0.0), 1.0, material1, None)));
+    small_spheres.add(Arc::new(Sphere::new(Point3::new(0.0, 1.0, 0.0), 1.0, material1, None)));
 
     let material2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
     let center2 = Point3::new(-4.0, 1.0, 0.0) + Vec3::new(0.0, random_number_custom(0.0,0.5), 0.0);
-    world.add(Arc::new(Sphere::new(Point3::new(-4.0, 1.0, 0.0), 1.0, material2, Some(center2))));
+    small_spheres.add(Arc::new(Sphere::new(Point3::new(-4.0, 1.0, 0.0), 1.0, material2, None)));
 
     let material3 = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
-    world.add(Arc::new(Sphere::new(Point3::new(4.0, 1.0, 0.0), 1.0, material3, None)));
+    small_spheres.add(Arc::new(Sphere::new(Point3::new(4.0, 1.0, 0.0), 1.0, material3, None)));
 
-    return world;
+    return small_spheres;
 }

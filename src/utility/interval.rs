@@ -37,7 +37,7 @@ impl Interval
      * Controll that value resides inside interval
      */
     pub fn surrounds(&self, v: f32) -> bool {
-        return self.min >= v && self.max <= v
+        return v >= self.min && v <= self.max
     }
 
     /*

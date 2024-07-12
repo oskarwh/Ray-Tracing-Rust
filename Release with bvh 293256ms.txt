@@ -1,0 +1,2 @@
+Release, with bvh 293256ms
+Release, no bvh 377767ms

@@ -35,7 +35,7 @@ pub fn write_color(handle: &mut StdoutLock, color: &Color, samples_per_pixel: i3
 }
 
 /**
- *  A function that check if a ray will hit any object, if no object is hit will return no light(color(0,0,0))
+ *  A function that check if a ray will hit any object, if no object is hit will return 
  */
 pub fn ray_color(r: &Ray, world: &HittableList, depth: i32) -> Color
 {
