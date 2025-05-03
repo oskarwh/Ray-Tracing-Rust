@@ -21,7 +21,7 @@ pub struct HittableObjectData
 /**
  * Public trait for a hittable object
  */
-pub trait Hittable {
+pub trait Hittable: Send + Sync  {
     fn hit(&self, r: &Ray, ray_t: Interval, hit_rec: &mut HitRecord) -> bool; 
     fn get_bounding_box(&self) -> AABB;
 }

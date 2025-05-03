@@ -7,6 +7,8 @@ use objects::bvh_node::BvhNode;
 use utility::rtweekend::random_number_custom;
 use vectors::vec3::{Point3, random_vec, random_vec_custom};
 
+use rayon::prelude::*;
+
 use crate::camera::Camera;
 use crate::objects::hittable_list::HittableList;
 use crate::objects::material::dielectric::Dielectric;
@@ -18,14 +20,14 @@ use crate::vectors::vec3::{Color, Vec3};
 use crate::vectors::color::*;
 use std::io::{self, Write};
 
-use std::sync::Arc;
+use std::sync::{Arc, Mutex, RwLock};
 use std::time::SystemTime;
 
 // Image constants
 const ASPECT_RATIO: f32 = 3.0/2.0;
 const IMAGE_WIDTH: i32 = 600;
 const IMAGE_HEIGHT: i32 = (IMAGE_WIDTH as f32 / ASPECT_RATIO) as i32;
-const SAMPLES_PER_PIXEL: i32 = 70;
+const SAMPLES_PER_PIXEL: i32 = 1;
 const MAX_DEPTH: i32 = 50;
 
 fn main() -> std::io::Result<()>
@@ -43,14 +45,54 @@ fn main() -> std::io::Result<()>
     let cam = Camera::new(lookfrom, lookat, vup, 20.0, ASPECT_RATIO, aperture, dist_to_focus, 1);
 
     // Render
-    let stdout = io::stdout();
-    let mut handle = stdout.lock();
-
-    let output = format!("P3\n{} {}\n255\n", IMAGE_WIDTH, IMAGE_HEIGHT);
-    handle.write_all(output.as_bytes())?;
+    let stdout = Arc::new(io::stdout());
+    // Write file header
+    {
+        let mut handle = stdout.lock();
+        let output = format!("P3\n{} {}\n255\n", IMAGE_WIDTH, IMAGE_HEIGHT);
+        handle.write_all(output.as_bytes())?;
+    }
+    
 
     eprintln!("\nStarting.\n");
-    let now = SystemTime::now();
+    let now: SystemTime = SystemTime::now();
+
+    let world_read = world.read().unwrap();
+    (0..IMAGE_WIDTH*IMAGE_HEIGHT).into_par_iter().for_each(|index| {
+        let h: i32 = index/IMAGE_WIDTH; // Current height
+        let w = index-(h*IMAGE_WIDTH); // Current width
+        //eprintln!("({},{}) - {}", h,w, index);
+        let mut pixel_color = Color::new(0.0,0.0,0.0);
+        for _ in 0..SAMPLES_PER_PIXEL
+        {
+            let u = ((w as f32) + random_number()) / (IMAGE_WIDTH-1) as f32;
+            let v = ((h as f32) + random_number()) / (IMAGE_HEIGHT-1) as f32;
+            
+            let ray = cam.get_ray(u, v);
+            pixel_color = pixel_color + ray_color(ray, &world_read, MAX_DEPTH);
+        }
+        //todo!("Fix check for error");
+        let mut handle = stdout.lock();
+        write_color(&mut handle, &pixel_color, SAMPLES_PER_PIXEL);
+    });
+    
+    /*(0..IMAGE_HEIGHT).into_par_iter().for_each(|j| {
+        (0..IMAGE_WIDTH).into_par_iter().for_each(|i| {
+            let mut pixel_color = Color::new(0.0,0.0,0.0);
+            for _ in 0..SAMPLES_PER_PIXEL
+            {
+                let u = ((i as f32) + random_number()) / (IMAGE_WIDTH-1) as f32;
+                let v = ((j as f32) + random_number()) / (IMAGE_HEIGHT-(j+1)) as f32;
+                
+                let ray = cam.get_ray(u, v);
+                pixel_color = pixel_color + ray_color(ray, &world_read, MAX_DEPTH);
+            }
+            //todo!("Fix check for error");
+            let mut handle = stdout.lock();
+            write_color(&mut handle, &pixel_color, SAMPLES_PER_PIXEL);
+        });
+    });
+
     for j in (0..IMAGE_HEIGHT).rev()
     {
         //eprintln!("{esc}c", esc = 27 as char);
@@ -68,7 +110,7 @@ fn main() -> std::io::Result<()>
             }
             write_color(&mut handle, &pixel_color, SAMPLES_PER_PIXEL)?;
         }
-    }
+    }*/
     match now.elapsed() {
         Ok(elapsed) => {
             eprintln!("Render took: {} ms", elapsed.as_millis());
@@ -85,7 +127,7 @@ fn main() -> std::io::Result<()>
 /**
  * Generates image on the cover of the first book
  */
-fn random_scene() -> HittableList
+fn random_scene() -> Arc<RwLock<HittableList>>
 {
     let mut small_spheres: HittableList = HittableList::new();
 
@@ -127,18 +169,22 @@ fn random_scene() -> HittableList
         }
     }
 
-    //let mut world = HittableList::new();
-    //world.add(BvhNode::add(&mut small_spheres));
+    let mut world = Arc::new(RwLock::new(HittableList::new()));
+    {
+        let mut world_edit = world.write().unwrap();
+        //(*world_edit).add(BvhNode::add(&mut small_spheres));
 
-    let material1 = Arc::new(Dielectric::new(1.5));
-    small_spheres.add(Arc::new(Sphere::new(Point3::new(0.0, 1.0, 0.0), 1.0, material1, None)));
+        let material1 = Arc::new(Dielectric::new(1.5));
+        (*world_edit).add(Arc::new(Sphere::new(Point3::new(0.0, 1.0, 0.0), 1.0, material1, None)));
 
-    let material2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
-    let center2 = Point3::new(-4.0, 1.0, 0.0) + Vec3::new(0.0, random_number_custom(0.0,0.5), 0.0);
-    small_spheres.add(Arc::new(Sphere::new(Point3::new(-4.0, 1.0, 0.0), 1.0, material2, None)));
+        let material2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
+        let center2 = Point3::new(-4.0, 1.0, 0.0) + Vec3::new(0.0, random_number_custom(0.0,0.5), 0.0);
+        (*world_edit).add(Arc::new(Sphere::new(Point3::new(-4.0, 1.0, 0.0), 1.0, material2, None)));
 
-    let material3 = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
-    small_spheres.add(Arc::new(Sphere::new(Point3::new(4.0, 1.0, 0.0), 1.0, material3, None)));
+        let material3 = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
+        (*world_edit).add(Arc::new(Sphere::new(Point3::new(4.0, 1.0, 0.0), 1.0, material3, None)));
+    }
+    
 
-    return small_spheres;
+    return world;
 }

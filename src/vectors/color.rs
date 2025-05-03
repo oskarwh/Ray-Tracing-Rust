@@ -1,6 +1,6 @@
 use crate::{objects::{hit_record::HitRecord, hittable::Hittable, hittable_list::HittableList}, utility::interval::Interval, Color};
 
-use std::{io::{Write, StdoutLock}, f32::INFINITY};
+use std::{f32::INFINITY, io::{StdoutLock, Write}, sync::Arc};
 
 use super::ray::Ray;
 
@@ -37,7 +37,7 @@ pub fn write_color(handle: &mut StdoutLock, color: &Color, samples_per_pixel: i3
 /**
  *  A function that check if a ray will hit any object, if no object is hit will return 
  */
-pub fn ray_color(r: &Ray, world: &HittableList, depth: i32) -> Color
+pub fn ray_color(r: Ray, world: &HittableList, depth: i32) -> Color
 {
     let mut rec = HitRecord::default();
 
@@ -49,13 +49,13 @@ pub fn ray_color(r: &Ray, world: &HittableList, depth: i32) -> Color
 
     // Check if ray hit anything
     let ray_t = Interval::new(SPHERE_INTERSECT, INFINITY);
-    if world.hit(r, ray_t, &mut rec)
+    if world.hit(&r, ray_t, &mut rec)
     {
         let mut scattered = Ray::default();
         let mut attenuation = Color::default();
-        if rec.mat_ptr.scatter(r, &rec, &mut attenuation, &mut scattered)
+        if rec.mat_ptr.scatter(&r, &rec, &mut attenuation, &mut scattered)
         {
-            return attenuation * ray_color(&scattered, world, depth-1)
+            return attenuation * ray_color(scattered, world, depth-1)
         }
         return Color::new(0.0,0.0,0.0)
         // Calculate target by creating random ray's around unit sphere from 

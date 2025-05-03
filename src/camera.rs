@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::{vectors::{vec3::{Point3, Vec3, cross, random_in_unit_disk}, ray::Ray}, utility::rtweekend::degrees_to_radians};
 use crate::random_number_custom;
 
